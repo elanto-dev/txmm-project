@@ -6,6 +6,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
+# This code was taken and adapted from GitHub repository: https://github.com/LaskasP/TripAdvisor-Python-Scraper-Restaurants-2021 
+
 driver = webdriver.Chrome()
 
 #webDriver init
