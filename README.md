@@ -1,2 +1,1 @@
-# txmm-project
-Text and Multimedia Mining course project
+# Text and Multimedia Mining course project
