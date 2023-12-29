@@ -4,6 +4,7 @@ import csv
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
 import time
 
 # This code was taken and adapted from GitHub repository: https://github.com/LaskasP/TripAdvisor-Python-Scraper-Restaurants-2021 
@@ -15,28 +16,38 @@ driver = webdriver.Chrome()
 def scrape_restaurant_info(url, file_path):
     driver.get(url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
+    # Check if restaurant still exists and has reviews
+    if soup.find('span', class_='ZDEqb') == None or soup.find('h1', class_='HjBfq') == None:
+        return False
     restaurant_name = soup.find('h1', class_='HjBfq').text
     avg_rating = soup.find('span', class_='ZDEqb').text.strip()
     food_types = [x.text for x in soup.find_all('a', class_='dlMOJ') if all(chr.isalpha() or chr.isspace() for chr in x.text)]
-    with open(file_path, mode='w', encoding="utf-8") as trip:
+    with open(file_path, mode='a', newline='', encoding="utf-8") as trip:
         data_writer = csv.writer(trip, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
         data_writer.writerow([restaurant_name, avg_rating, food_types])
+    return True
+
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait as wait
 
 def scrape_restaurant_reviews(url, file_path):
     next_page = True
     while next_page:
         #Requests
         driver.get(url)
-        time.sleep(1)
+        time.sleep(5)
         #Click More button
-        more = driver.find_elements("xpath", "//span[contains(text(),'More')]")
-        for element in enumerate(more):
+        more = driver.find_elements(By.XPATH, "//span[contains(text(),'More')]")
+        for x in range(0,len(more)):
             try:
-                driver.execute_script("arguments[0].click();", element)
+                driver.execute_script("arguments[0].click();", more[x])
                 time.sleep(3)
             except:
                 pass
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+        if soup.find('h1', class_='HjBfq') == None:
+            continue
         #Store name
         storeName = soup.find('h1', class_='HjBfq').text
         #Reviews
@@ -47,15 +58,17 @@ def scrape_restaurant_reviews(url, file_path):
             continue
         #Export to csv
         try:
-            with open(file_path, mode='w', encoding="utf-8") as trip_data:
+            with open(file_path, mode='a', newline='', encoding="utf-8") as trip_data:
                 data_writer = csv.writer(trip_data, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
                 for review in reviews:
                     ratingDate = review.find('span', class_='ratingDate').get('title')
+
                     text_review = review.find('p', class_='partial_entry')
-                    if len(text_review.contents) > 2:
+                    if len(text_review.contents) >= 2:
                         reviewText = str(text_review.contents[0][:-3]) + ' ' + str(text_review.contents[1].text)
                     else:
                         reviewText = text_review.text
+                    reviewText = reviewText.replace("\n", " ").lower()
                     reviewerUsername = review.find('div', class_='info_text pointer_cursor')
                     reviewerUsername = reviewerUsername.select('div > div')[0].get_text(strip=True)
                     rating = review.find('div', class_='ui_column is-9').findChildren('span')
