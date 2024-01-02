@@ -7,6 +7,7 @@ nltk.download('omw-1.4')
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 import csv
+from tokenize import tokenize
 
 stop = set(stopwords.words('english'))
 exclude = set(string.punctuation)

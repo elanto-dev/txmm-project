@@ -1,6 +1,7 @@
 import scraper.scraper as scraper
 import data_preprocessing.preprocessing as preprocessing
 import data_preprocessing.common_restaurants_types as file_processing
+import modelling
 import argparse
 import os
 import glob
@@ -25,7 +26,8 @@ def main(scrape, remove_scraped, process_reviews):
         file_processing.separate_reviews_to_files(restaurant_reviews_cleaned_csv, most_common_restaurants_dict, folder_name)
     new_files = glob.glob(f'./{folder_name}/*')
     for f in new_files:
-        print(preprocessing.read_and_preprocess_file(f))
+        processed_reviews = preprocessing.read_and_preprocess_file(f)
+        modelling.topic_modelling(processed_reviews, f)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -27,6 +27,7 @@ share/python-wheels/
 MANIFEST
 reviews/
 scraper/tripadvisor_european_restaurants.csv
+txmmenv/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
